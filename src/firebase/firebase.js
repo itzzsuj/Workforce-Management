@@ -5,12 +5,7 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";  // Add Firebase Storage
  
 const firebaseConfig = {
-    apiKey: "AIzaSyD6QSIJmQrMj2v1mu0N8FdYbRQttx3vgTo",
-    authDomain: "att-login-auth.firebaseapp.com",
-    projectId: "att-login-auth",
-    storageBucket: "att-login-auth.appspot.com",
-    messagingSenderId: "834030621075",
-    appId: "1:834030621075:web:cdecb4e2fe3636ec59d866"
+    //write you're own firebase apikey
   };
 
 // Initialize Firebase
