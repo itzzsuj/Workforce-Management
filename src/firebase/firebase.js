@@ -1,9 +1,10 @@
-// Import the functions you need from the SDKs
+// Import the necessary Firebase SDKs
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getStorage } from "firebase/storage";  // Add Firebase Storage
- 
+import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Add Firebase Storage functions
+
+// Your Firebase Configuration object
 const firebaseConfig = {
   apiKey: "AIzaSyD6QSIJmQrMj2v1mu0N8FdYbRQttx3vgTo",
   authDomain: "att-login-auth.firebaseapp.com",
@@ -11,15 +12,29 @@ const firebaseConfig = {
   storageBucket: "att-login-auth.appspot.com",
   messagingSenderId: "834030621075",
   appId: "1:834030621075:web:cdecb4e2fe3636ec59d866"
-  };
+};
 
-// Initialize Firebase
+// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
-export const auth = getAuth(app); // Authentication
-export const db = getFirestore(app); // Firestore Database
-export const storage = getStorage(app); // Firebase Storage  <-- Add this for media uploads
+// Export Firebase services to be used across the app
+export const auth = getAuth(app);          // Firebase Authentication
+export const db = getFirestore(app);       // Firestore Database
+export const storage = getStorage(app);    // Firebase Storage
+
+// Function to download the TensorFlow model from Firebase Storage
+export async function fetchModelFromStorage() {
+  const modelRef = ref(storage, "tfjs-model/model.json"); // Path to your model.json file in Storage
+
+  try {
+    const modelURL = await getDownloadURL(modelRef); // Get the URL to download the model
+    console.log("Model URL: ", modelURL);
+    return modelURL; // You can use this URL to load the model in TensorFlow.js
+  } catch (error) {
+    console.error("Error fetching model from Firebase Storage:", error);
+    throw error;
+  }
+}
 
 // Fetch current location (latitude, longitude) from Firestore
 export async function fetchUserLocation(userId) {
@@ -38,17 +53,19 @@ export async function fetchUserLocation(userId) {
     }
   } catch (error) {
     console.error("Error fetching location: ", error);
-    throw error;  // Optionally rethrow the error to handle it later
+    throw error;
   }
 }
 
-// Example call to the function with the userId
-fetchUserLocation("USER_ID").then(location => {
-  if (location) {
-    console.log("Location fetched:", location);
-  }
-}).catch(error => {
-  console.error("Error during location fetch:", error);
-});
+// Example call to the fetchUserLocation function
+fetchUserLocation("USER_ID")
+  .then(location => {
+    if (location) {
+      console.log("Location fetched:", location);
+    }
+  })
+  .catch(error => {
+    console.error("Error during location fetch:", error);
+  });
 
 export default app;

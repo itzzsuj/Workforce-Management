@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { FaUserPlus, FaUsers, FaCalendarCheck, FaClipboardList, FaExclamationCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";  // Import FaCalendarAlt here
+import { FaUserPlus, FaUsers, FaCalendarCheck, FaClipboardList, FaExclamationCircle, FaSignOutAlt, FaCalendarAlt } from "react-icons/fa";
 import { auth } from "../firebase/firebase";
 import { signOut } from "firebase/auth";
-import AddUser from './AddUser';   // New component to add a user
-import Users from './Users';       // New component to list users
-import AttendanceReport from './AttendanceReport'; // New component for attendance report
-import ShiftManagement from './ShiftManagement';   // New component for managing shifts
-import LeaveApplications from './LeaveApplications'; // New component to view leave applications
-import Issues from './Issues';  // New component to view and manage issues
+import AddUser from './AddUser';
+import Users from './Users';
+import AttendanceReport from './AttendanceReport';
+import ShiftManagement from './ShiftManagement';
+import LeaveApplications from './LeaveApplications';
+import Issues from './Issues';
+import PerformanceMatrix from './PerformanceMatrix'; // Import the new component
 
 const ManagerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -75,8 +76,16 @@ const ManagerDashboard = () => {
               }`}
             onClick={() => setActiveTab("leaveApplications")}
           >
-            <FaCalendarAlt className="mr-3" /> {/* Fixed missing icon */}
+            <FaCalendarAlt className="mr-3" />
             Leave Applications
+          </button>
+          <button
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "performanceMatrix" ? "bg-gray-700 text-white" : ""
+              }`}
+            onClick={() => setActiveTab("performanceMatrix")}
+          >
+            <FaClipboardList className="mr-3" />
+            Performance Matrix
           </button>
           <button
             className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "issues" ? "bg-gray-700 text-white" : ""
@@ -139,6 +148,7 @@ const ManagerDashboard = () => {
           {activeTab === "attendanceReport" && <AttendanceReport />}
           {activeTab === "shiftManagement" && <ShiftManagement />}
           {activeTab === "leaveApplications" && <LeaveApplications />}
+          {activeTab === "performanceMatrix" && <PerformanceMatrix />} {/* Added PerformanceMatrix */}
           {activeTab === "issues" && <Issues />}
         </main>
       </div>
