@@ -1,146 +1,144 @@
 import React, { useState, useEffect } from "react";
-import * as tf from "@tensorflow/tfjs";
-import { fetchModelFromStorage } from '../firebase/firebase'; // Assuming you already have this function to fetch the model URL
+import { db } from "../firebase/firebase"; // Assuming you have Firebase set up
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 const ShiftManagement = () => {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [projectSize, setProjectSize] = useState(""); // "Small", "Medium", "Large"
+  const [projectSize, setProjectSize] = useState("");
   const [days, setDays] = useState("");
-  const [model, setModel] = useState(null);
-  const [prediction, setPrediction] = useState(null);
+  const [url, setUrl] = useState("");
+  const [availableEmployees, setAvailableEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load the TensorFlow.js model from Firebase Storage
   useEffect(() => {
-    const loadModel = async () => {
+    // Fetch employees whose current project is 'nil'
+    const fetchAvailableEmployees = async () => {
       try {
-        const modelUrl = await fetchModelFromStorage(); // Fetch the model URL from Firebase Storage
-        const loadedModel = await tf.loadGraphModel(modelUrl); // Load the model using TensorFlow.js
-        setModel(loadedModel);
+        const employeesQuery = query(
+          collection(db, "Employees"),
+          where("currentProject", "==", "nil")
+        );
+        const querySnapshot = await getDocs(employeesQuery);
+        const employees = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setAvailableEmployees(employees);
         setLoading(false);
-        console.log("Model loaded successfully.");
       } catch (error) {
-        console.error("Error loading model:", error);
+        console.error("Error fetching employees:", error);
         setLoading(false);
       }
     };
 
-    loadModel();
+    fetchAvailableEmployees();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!model) {
-      alert("Model is not loaded yet.");
-      return;
-    }
+    // Create the Streamlit URL with query parameters
+    const streamlitUrl = `http://localhost:8501/?project_name=${encodeURIComponent(
+      projectName
+    )}&project_description=${encodeURIComponent(
+      projectDescription
+    )}&project_size=${encodeURIComponent(projectSize)}&days=${encodeURIComponent(
+      days
+    )}`;
 
-    if (!projectName || !projectDescription || !projectSize || !days) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    // Map project size to numerical value
-    let sizeValue;
-    if (projectSize === "Small") {
-      sizeValue = 1;
-    } else if (projectSize === "Medium") {
-      sizeValue = 2;
-    } else if (projectSize === "Large") {
-      sizeValue = 3;
-    } else {
-      alert("Invalid project size selected.");
-      return;
-    }
-
-    try {
-      // Create input tensor based on project size and number of days
-      const inputTensor = tf.tensor2d([
-        [sizeValue, parseFloat(days)], // Map "Small", "Medium", "Large" to numerical values
-      ]);
-
-      // Perform prediction asynchronously
-      const output = model.predict(inputTensor);
-      const predictionArray = await output.array(); // Get the prediction as an array
-      setPrediction(predictionArray); // Set the prediction in state
-    } catch (error) {
-      console.error("Error during prediction:", error);
-      alert("Error predicting shift allocation.");
-    }
+    // Set the URL to display the Streamlit app in the iframe
+    setUrl(streamlitUrl);
   };
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Shift Management</h2>
-      {loading ? (
-        <p>Loading model...</p>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label>Project Name:</label>
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              required
-              placeholder="Enter project name"
-              className="border p-2 rounded w-full"
-            />
-          </div>
-          <div>
-            <label>Project Description:</label>
-            <input
-              type="text"
-              value={projectDescription}
-              onChange={(e) => setProjectDescription(e.target.value)}
-              required
-              placeholder="Enter project description"
-              className="border p-2 rounded w-full"
-            />
-          </div>
-          <div>
-            <label>Project Size:</label>
-            <select
-              value={projectSize}
-              onChange={(e) => setProjectSize(e.target.value)}
-              required
-              className="border p-2 rounded w-full"
-            >
-              <option value="">Select project size</option>
-              <option value="Small">Small</option>
-              <option value="Medium">Medium</option>
-              <option value="Large">Large</option>
-            </select>
-          </div>
-          <div>
-            <label>No. of Days:</label>
-            <input
-              type="number"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              required
-              placeholder="Enter number of days"
-              className="border p-2 rounded w-full"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white p-2 rounded"
-            disabled={loading} // Disable the button while loading
-          >
-            {loading ? "Loading model..." : "Submit"}
-          </button>
-        </form>
-      )}
 
-      {prediction && (
+      {/* Display Available Employees */}
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Available Employees</h3>
+        {loading ? (
+          <p>Loading available employees...</p>
+        ) : availableEmployees.length > 0 ? (
+          <ul className="list-disc pl-5">
+            {availableEmployees.map((employee) => (
+              <li key={employee.id}>
+                <strong>ID:</strong> {employee.employeeId} | <strong>Name:</strong> {employee.name}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No available employees at the moment.</p>
+        )}
+      </div>
+
+      {/* Display the form after listing employees */}
+      <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+        <div>
+          <label>Project Name:</label>
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            required
+            placeholder="Enter project name"
+            className="border p-2 rounded w-full"
+          />
+        </div>
+        <div>
+          <label>Project Description:</label>
+          <input
+            type="text"
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            required
+            placeholder="Enter project description"
+            className="border p-2 rounded w-full"
+          />
+        </div>
+        <div>
+          <label>Project Size:</label>
+          <select
+            value={projectSize}
+            onChange={(e) => setProjectSize(e.target.value)}
+            required
+            className="border p-2 rounded w-full"
+          >
+            <option value="">Select project size</option>
+            <option value="Small">Small</option>
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+          </select>
+        </div>
+        <div>
+          <label>No. of Days:</label>
+          <input
+            type="number"
+            value={days}
+            onChange={(e) => setDays(e.target.value)}
+            required
+            placeholder="Enter number of days"
+            className="border p-2 rounded w-full"
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Submit
+        </button>
+      </form>
+
+      {/* Streamlit Output */}
+      {url && (
         <div className="mt-4">
-          <h3 className="text-lg font-semibold">Shift Prediction:</h3>
-          <pre className="bg-gray-200 p-2 rounded">
-            {JSON.stringify(prediction, null, 2)}
-          </pre>
+          <h3 className="text-lg font-semibold">Streamlit App Output:</h3>
+          <iframe
+            src={url}
+            style={{ width: "100%", height: "600px", border: "none" }}
+            title="Streamlit App"
+          />
         </div>
       )}
     </div>

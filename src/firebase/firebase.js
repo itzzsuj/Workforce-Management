@@ -1,10 +1,10 @@
 // Import the necessary Firebase SDKs
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Add Firebase Storage functions
+import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Firebase Storage functions
 
-// Your Firebase Configuration object
+// Your Firebase Configuration object (replace with your own config)
 const firebaseConfig = {
   apiKey: "AIzaSyD6QSIJmQrMj2v1mu0N8FdYbRQttx3vgTo",
   authDomain: "att-login-auth.firebaseapp.com",
@@ -14,8 +14,13 @@ const firebaseConfig = {
   appId: "1:834030621075:web:cdecb4e2fe3636ec59d866"
 };
 
-// Initialize Firebase app
-const app = initializeApp(firebaseConfig);
+// Check if Firebase app is already initialized to prevent duplicate initialization
+let app;
+if (!getApps().length) {
+  app = initializeApp(firebaseConfig);  // Initialize Firebase if no apps have been initialized
+} else {
+  app = getApps()[0];  // Use the already initialized app
+}
 
 // Export Firebase services to be used across the app
 export const auth = getAuth(app);          // Firebase Authentication
@@ -36,7 +41,7 @@ export async function fetchModelFromStorage() {
   }
 }
 
-// Fetch current location (latitude, longitude) from Firestore
+// Function to fetch user location (latitude, longitude) from Firestore
 export async function fetchUserLocation(userId) {
   try {
     const docRef = doc(db, "locations", userId);  // Get a reference to the document
@@ -56,16 +61,5 @@ export async function fetchUserLocation(userId) {
     throw error;
   }
 }
-
-// Example call to the fetchUserLocation function
-fetchUserLocation("USER_ID")
-  .then(location => {
-    if (location) {
-      console.log("Location fetched:", location);
-    }
-  })
-  .catch(error => {
-    console.error("Error during location fetch:", error);
-  });
 
 export default app;

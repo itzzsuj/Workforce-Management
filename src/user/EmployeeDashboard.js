@@ -1,31 +1,33 @@
-// src/components/EmployeeDashboard.js
 import React, { useState, useEffect } from "react";
 import { FaUser, FaCalendarAlt, FaBell, FaExclamationCircle, FaChartBar, FaSignOutAlt } from "react-icons/fa";
-import { auth } from "../firebase/firebase";
-import { signOut } from "firebase/auth";
-import Attendance from './Attendance';
-import Profile from './Profile';
-import LeaveApplication from './LeaveApplication';
-import Notifications from './Notifications';
-import ReportProblem from './ReportProblem';
+import { auth } from "../firebase/firebase"; // Firebase setup
+import { signOut } from "firebase/auth"; // Firebase Auth for sign out
+import Attendance from './Attendance'; // Attendance component
+import Profile from './Profile'; // Profile component
+import LeaveApplication from './LeaveApplication'; // Leave Application component
+import Notifications from './Notifications'; // Notifications component
+import ReportProblem from './ReportProblem'; // Report a Problem component
 
 const EmployeeDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("attendance");
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Sidebar toggle
+  const [user, setUser] = useState(null); // User state
+  const [activeTab, setActiveTab] = useState("attendance"); // Active tab state
 
+  // Fetch current user details from Firebase Auth
   useEffect(() => {
     const currentUser = auth.currentUser;
     setUser(currentUser);
   }, []);
 
+  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Handle sign out
   const handleSignOut = async () => {
     await signOut(auth);
-    window.location.href = "/Login";
+    window.location.href = "/Login"; // Redirect to login page after signing out
   };
 
   return (
@@ -38,46 +40,52 @@ const EmployeeDashboard = () => {
           <span className="text-white font-bold text-xl">Employee Dashboard</span>
         </div>
         <nav className="mt-5">
+          {/* Attendance Tab */}
           <button
-            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "attendance" ? "bg-gray-700 text-white" : ""
-              }`}
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "attendance" ? "bg-gray-700 text-white" : ""}`}
             onClick={() => setActiveTab("attendance")}
           >
             <FaChartBar className="mr-3" />
             Attendance
           </button>
+
+          {/* Profile Tab */}
           <button
-            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "profile" ? "bg-gray-700 text-white" : ""
-              }`}
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "profile" ? "bg-gray-700 text-white" : ""}`}
             onClick={() => setActiveTab("profile")}
           >
             <FaUser className="mr-3" />
             Profile
           </button>
+
+          {/* Leave Application Tab */}
           <button
-            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "leave" ? "bg-gray-700 text-white" : ""
-              }`}
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "leave" ? "bg-gray-700 text-white" : ""}`}
             onClick={() => setActiveTab("leave")}
           >
             <FaCalendarAlt className="mr-3" />
             Leave Application
           </button>
+
+          {/* Notifications Tab */}
           <button
-            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "notifications" ? "bg-gray-700 text-white" : ""
-              }`}
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "notifications" ? "bg-gray-700 text-white" : ""}`}
             onClick={() => setActiveTab("notifications")}
           >
             <FaBell className="mr-3" />
             Notifications
           </button>
+
+          {/* Report a Problem Tab */}
           <button
-            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "report" ? "bg-gray-700 text-white" : ""
-              }`}
+            className={`flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left ${activeTab === "report" ? "bg-gray-700 text-white" : ""}`}
             onClick={() => setActiveTab("report")}
           >
             <FaExclamationCircle className="mr-3" />
             Report a Problem
           </button>
+
+          {/* Logout */}
           <button
             className="flex items-center py-2 px-6 text-gray-300 hover:bg-gray-700 hover:text-white w-full text-left mt-auto"
             onClick={handleSignOut}
@@ -115,7 +123,7 @@ const EmployeeDashboard = () => {
               <>
                 <img
                   className="h-8 w-8 rounded-full object-cover"
-                  src={user.photoURL || "https://via.placeholder.com/150"}
+                  src={user.photoURL || "https://via.placeholder.com/150"} // Default image if no photoURL
                   alt="User"
                 />
                 <span className="ml-2 font-medium text-gray-800">{user.displayName || user.email}</span>
@@ -126,11 +134,11 @@ const EmployeeDashboard = () => {
 
         {/* Content based on active tab */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200 p-4">
-          {activeTab === "attendance" && <Attendance />}
-          {activeTab === "profile" && <Profile />}
-          {activeTab === "leave" && <LeaveApplication />}
-          {activeTab === "notifications" && <Notifications />}
-          {activeTab === "report" && <ReportProblem />}
+          {activeTab === "attendance" && <Attendance />} {/* Attendance Component */}
+          {activeTab === "profile" && <Profile />} {/* Profile Component */}
+          {activeTab === "leave" && <LeaveApplication />} {/* Leave Application Component */}
+          {activeTab === "notifications" && <Notifications />} {/* Notifications Component */}
+          {activeTab === "report" && <ReportProblem />} {/* Report Problem Component */}
         </main>
       </div>
     </div>

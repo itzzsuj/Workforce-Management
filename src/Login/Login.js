@@ -28,6 +28,28 @@ const Login = () => {
     }
   };
 
+  // Helper functions
+  const generateEmployeeId = () => {
+    return `EMP${Math.floor(1000 + Math.random() * 9000)}`;
+  };
+
+  const generateNameFromEmail = (email) => {
+    return email.split('@')[0];  // Use first part of email as name
+  };
+
+  const generateGender = (name) => {
+    const maleNames = ["John", "Michael", "David"];
+    const femaleNames = ["Sarah", "Emma", "Jessica"];
+
+    if (maleNames.includes(name)) {
+      return "Male";
+    } else if (femaleNames.includes(name)) {
+      return "Female";
+    } else {
+      return "Other";
+    }
+  };
+
   // Login or Register function based on isRegister state
   const signInOrRegister = async (e) => {
     e.preventDefault();
@@ -41,7 +63,12 @@ const Login = () => {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         alert("Registration successful");
-        await addUserDataToFirestore(userCredential.user.uid, email, usertype);
+
+        const employeeId = generateEmployeeId();
+        const name = generateNameFromEmail(email);
+        const gender = generateGender(name);
+
+        await addUserDataToFirestore(userCredential.user.uid, email, employeeId, name, gender, usertype);
         navigate("/ManagerDashboard");
       } catch (error) {
         alert(`Registration failed: ${error.message}`);
@@ -63,6 +90,10 @@ const Login = () => {
           querySnapshot.forEach((doc) => {
             const userData = doc.data();
             localStorage.setItem("userType", usertype);
+            localStorage.setItem("employeeName", userData.name);
+            localStorage.setItem("employeeEmail", email);
+            localStorage.setItem("employeeId", userData.employeeId);
+            localStorage.setItem("gender", userData.gender);
 
             if (usertype === "Manager") {
               navigate("/ManagerDashboard");
@@ -79,12 +110,15 @@ const Login = () => {
     }
   };
 
-  const addUserDataToFirestore = async (uid, email, usertype) => {
+  const addUserDataToFirestore = async (uid, email, employeeId, name, gender, usertype) => {
     try {
       const userDocRef = collection(db, usertype === "Manager" ? "Managers" : "Employees");
       await addDoc(userDocRef, {
         uid: uid,
         email: email,
+        employeeId: employeeId,
+        name: name,
+        gender: gender,
         userType: usertype,
       });
     } catch (error) {
