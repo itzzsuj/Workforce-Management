@@ -6,12 +6,7 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage"; // Firebase 
 
 // Your Firebase Configuration object (replace with your own config)
 const firebaseConfig = {
-  apiKey: "AIzaSyD6QSIJmQrMj2v1mu0N8FdYbRQttx3vgTo",
-  authDomain: "att-login-auth.firebaseapp.com",
-  projectId: "att-login-auth",
-  storageBucket: "att-login-auth.appspot.com",
-  messagingSenderId: "834030621075",
-  appId: "1:834030621075:web:cdecb4e2fe3636ec59d866"
+  //write youre own api key 
 };
 
 // Check if Firebase app is already initialized to prevent duplicate initialization
